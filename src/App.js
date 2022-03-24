@@ -1,23 +1,25 @@
-import logo from './logo.svg';
+import React, { Component, useState } from 'react';
 import './App.css';
+import Header from './components/Header/Header';
+import MainParams from './components/Params/MainParams';
+import SensorsData from './components/Sensors/SensorsData';
+// import Telegram from './components/Telegram/Telegram';
+const d = new Date();
+const cd = `${d.getUTCFullYear()}-${('0'+(d.getUTCMonth()+1)).slice(-2)}-${('0'+(d.getUTCDate())).slice(-2)}`;
 
-function App() {
+
+const App = () => {
+  const [currDate, setCurrDate] = useState(cd);
+  const [term, setTerm] = useState(Math.floor(d.getUTCHours() / 3) * 3);
+  const initTelegram = term % 2 == 0 ? 'ЩЭСМЮ' : 'ЩЭСИД';
+  const [telegram, setTelegram] = useState(initTelegram);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />     
+      <MainParams currDate={currDate} term={term}/>
+      <SensorsData />
+      <p>{telegram}</p>
+      {/* <Telegram term={term} /> */}
     </div>
   );
 }
