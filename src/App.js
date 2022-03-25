@@ -3,23 +3,44 @@ import './App.css';
 import Header from './components/Header/Header';
 import MainParams from './components/Params/MainParams';
 import SensorsData from './components/Sensors/SensorsData';
-// import Telegram from './components/Telegram/Telegram';
+import Telegram from './components/Telegram/Telegram';
+import Select from 'react-select';
 const d = new Date();
 const cd = `${d.getUTCFullYear()}-${('0'+(d.getUTCMonth()+1)).slice(-2)}-${('0'+(d.getUTCDate())).slice(-2)}`;
-
+const stations = ['','Донецк','Амвросиевка','Дебальцево','','','','','','','Седово'];
+const codes = [null, 34519, 34622, 34524, null, null, null, null, null, null, 99023]
+const stationsArray = [];
+stations.map((s,i) => {return (s !== '') ? stationsArray.push({label: s, value: codes[i]}) : null});
 
 const App = () => {
   const [currDate, setCurrDate] = useState(cd);
   const [term, setTerm] = useState(Math.floor(d.getUTCHours() / 3) * 3);
-  const initTelegram = term % 2 == 0 ? 'ЩЭСМЮ' : 'ЩЭСИД';
-  const [telegram, setTelegram] = useState(initTelegram);
+  // const [code, setCode] = useState(34519);
+  const [station, setStation] = useState({label: 'Донецк', value: 34519});
+  const handleStationSelected = (val) => {
+    setStation(val);
+  }
+  // alert(station.value)
   return (
     <div className="App">
-      <Header />     
-      <MainParams currDate={currDate} term={term}/>
+      <Header />   
+      <table className="table table-hover">
+        <thead>
+          <tr>
+            <th>Дата (UTC)</th><th>Срок</th><th>Станция</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{currDate}</td><td>{term}</td><td><Select value={station} onChange={handleStationSelected} options={stationsArray}/> </td>
+          </tr>
+        </tbody>
+      </table> 
+      
+      {/* <MainParams currDate={currDate} term={term}/> */}
       <SensorsData />
-      <p>{telegram}</p>
-      {/* <Telegram term={term} /> */}
+      
+      <Telegram term={term} code={station.value}/>
     </div>
   );
 }
