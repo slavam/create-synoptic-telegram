@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 const SensorsData = () => {
-  const [temperature, settemperature] = useState(10);
-  const [pressure, setpressure] = useState(740);
+  const [temperature, setTemperature] = useState(10);
+  const [pressure, setPressure] = useState(740);
   const [humidity, setHumidity] = useState(30);
   const [windSpeed, setWindSpeed] = useState(2);
   const [windDirection, setWindDirection] = useState(100);
