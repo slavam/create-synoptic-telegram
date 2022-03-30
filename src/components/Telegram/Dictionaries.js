@@ -41,5 +41,16 @@ const nCloudArray = [
   {label: 'Определить невозможно (затруднена видимость)', value: "9"},
   {label: 'Определить невозможно (наблюдения не проводились)', value: "/"},
 ];
+const tendencyArray = [
+  {label: "Рост, затем падение 0", value: "0"},
+  {label: "Повысилось 1", value: "1"},
+  {label: "Повысилось 2", value: "2"},
+  {label: "Повысилось 3", value: "3"},
+  {label: "Без изменений 4", value: "4"},
+  {label: "Падение, затем рост 5", value: "5"},
+  {label: "Понизилось 6", value: "6"},
+  {label: "Понизилось 7", value: "7"},
+  {label: "Понизилось 8", value: "8"}
+];
 
-export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray};
+export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, tendencyArray};

@@ -24,7 +24,8 @@ const App = () => {
   }
   const initSensorData = {
     temperature: 10,
-    pressure: 740,
+    pressure: 1011.0,
+    prevPressure: 1011.5,
     humidity: 30,
     windSpeed: 2,
     windDirection: 100,
