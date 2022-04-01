@@ -169,18 +169,19 @@ const weatherTermArray = [
   {label: "Гроза сильная, град, крупа", value: "99"},
 ];
 
-// WEATHER_PAST = [
-//   "Количество облаков <= 5 баллов, ясно", #0
-//   "Количество облаков изменилось от <= 5 баллов до > 5 баллов", #1
-//   "Количество облаков > 5 баллов, пасмурно", #2
-//   "Буря песчаная или пыльная. Метель", #3
-//   "Туман или ледяной туман. Мгла", #4
-//   "Морось", #5
-//   "Дождь", #6
-//   "Дождь со снегом. Снег", #7
-//   "Ливневые осадки", #8
-//   "Гроза с осадками или без них", #9
-//   ]
+const weatherPastArray = [
+  {label: "Количество облаков <= 5 баллов, ясно", value: "0"},
+  {label: "Количество облаков изменилось от <= 5 баллов до > 5 баллов", value: "1"},
+  {label: "Количество облаков > 5 баллов, пасмурно", value: "2"},
+  {label: "Буря песчаная или пыльная. Метель", value: "3"},
+  {label: "Туман или ледяной туман. Мгла", value: "4"},
+  {label: "Морось", value: "5"},
+  {label: "Дождь", value: "6"},
+  {label: "Дождь со снегом. Снег", value: "7"},
+  {label: "Ливневые осадки", value: "8"},
+  {label: "Гроза с осадками или без них", value: "9"}
+];
 
 
-export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, tendencyArray, durationPrecipitationArray, weatherTermArray};
+export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, 
+  tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray};

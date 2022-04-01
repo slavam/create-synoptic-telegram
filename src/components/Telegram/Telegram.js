@@ -1,6 +1,7 @@
 import React, { useState, useReducer } from 'react';
 import Select from 'react-select';
-import {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, tendencyArray, durationPrecipitationArray, weatherTermArray} from './Dictionaries';
+import {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, 
+  tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray} from './Dictionaries';
 
 const telegramReducer = (state, action) => {
   switch (action.type) {
@@ -11,9 +12,9 @@ const telegramReducer = (state, action) => {
         return {...state, iR: action.irValue, precipitation: '', durationPrecipitation: ''};
     case 'SET_IX':
       if(action.ixValue === '1')
-        return { ...state, iX: action.ixValue, weatherTerm: action.weatherTerm};
+        return { ...state, iX: action.ixValue, weatherTerm: action.weatherTerm, weatherPast: action.weatherPast};
       else
-        return { ...state, iX: action.ixValue, weatherTerm: ''};
+        return { ...state, iX: action.ixValue, weatherTerm: '', weatherPast: ''};
     case 'SET_CLOUDHEIGHT':
       return { ...state, cloudHeight: action.cloudHeightValue };
     case 'SET_VISIBILITYRANGE':
@@ -42,6 +43,8 @@ const telegramReducer = (state, action) => {
       return {...state, durationPrecipitation: action.durationPrecipitation};
     case 'SET_WEATHERTERM':
       return {...state, weatherTerm: action.weatherTerm};
+    case 'SET_WEATHERPAST':
+      return {...state, weatherPast: action.weatherPast};
     default:
       return state;
   }
@@ -66,6 +69,7 @@ const Telegram = ({term, code, sensorData}) => {
   const [precipitation, setPrecipitation] = useState('002');
   const [durationPrecipitation, setDurationPrecipitation] = useState({label: '12', value: '2'});
   const [weatherTermO, setWeatherTerm] = useState({label: "Изменение количества облаков в последний час неизвестно", value: "0"});
+  const [weatherPastO, setWeatherPast] = useState({label: "Количество облаков <= 5 баллов, ясно", value: "0"});
   const initTelegram = {
     headGroup: headGroup,
     code: code,
@@ -84,7 +88,8 @@ const Telegram = ({term, code, sensorData}) => {
     tendencyValue: ('00'+Math.abs(+sensorData.prevPressure-sensorData.pressure)*10).slice(-3),
     precipitation: '002',
     durationPrecipitation: '2',
-    weatherTerm: '00'
+    weatherTerm: '00',
+    weatherPast: '00'
   }
   const [telegram, dispatch] = useReducer(telegramReducer,initTelegram);
   
@@ -102,7 +107,8 @@ const Telegram = ({term, code, sensorData}) => {
     dispatch({
       type: 'SET_IX',
       ixValue: val.value,
-      weatherTerm: ('0'+weatherTermO.value).slice(-2)
+      weatherTerm: ('0'+weatherTermO.value).slice(-2),
+      weatherPast: ('0'+weatherPastO.value).slice(-2),
     });
   }
   const handleCloudHeightSelected = (val) =>{
@@ -226,12 +232,19 @@ const Telegram = ({term, code, sensorData}) => {
       weatherTerm: ('0'+val.value).slice(-2)
     });
   }
+  const handleWeatherPastSelected = (val) =>{
+    setWeatherPast(val);
+    dispatch({
+      type: 'SET_WEATHERPAST',
+      weatherPast: ('0'+val.value).slice(-2)
+    })
+  }
   const t = `${telegram.headGroup} ${telegram.code} \
     ${telegram.iR}${telegram.iX}${telegram.cloudHeight}${telegram.visibilityRange} \
     ${telegram.nCloud}${telegram.windDirection}${telegram.windSpeed} \
     1${telegram.temperature} 2${telegram.dewPoint} 3${telegram.pressure} 4${telegram.pressureSeaLevel} \
     5${telegram.tendency}${telegram.tendencyValue}${iRO.value==='1'? ' 6': ' '}${telegram.precipitation}${telegram.durationPrecipitation}\
-    ${iXO.value==='1'? ' 7': ' '}${telegram.weatherTerm}`;
+    ${iXO.value==='1'? ' 7': ' '}${telegram.weatherTerm}${telegram.weatherPast}`;
   const group6 = iRO.value === "1" ? 
     <tr><td><input type='number' value={precipitation} onChange={handlePrecipitationChange} min='0.0' max='989' step='0.1'/></td>    
     <td><Select value={durationPrecipitation} onChange={handleDurationPrecipitationSelected} options={durationPrecipitationArray}/></td></tr> : 
@@ -239,7 +252,7 @@ const Telegram = ({term, code, sensorData}) => {
   const group7 = iXO.value === "1" ?
     <tr>
       <td><Select value={weatherTermO} onChange={handleWeatherTermSelected} options={weatherTermArray}/></td>
-      <td></td>
+      <td><Select value={weatherPastO} onChange={handleWeatherPastSelected} options={weatherPastArray}/></td>
     </tr> : null;
   return(
     <div className="container">
