@@ -1,13 +1,19 @@
 import React, { useState, useReducer } from 'react';
 import Select from 'react-select';
-import {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, tendencyArray} from './Dictionaries';
+import {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, tendencyArray, durationPrecipitationArray, weatherTermArray} from './Dictionaries';
 
 const telegramReducer = (state, action) => {
   switch (action.type) {
     case 'SET_IR':
-      return { ...state, iR: action.irValue };
+      if(action.irValue === '1')
+        return { ...state, iR: action.irValue, precipitation: action.precipitation, durationPrecipitation: action.durationPrecipitation };
+      else
+        return {...state, iR: action.irValue, precipitation: '', durationPrecipitation: ''};
     case 'SET_IX':
-        return { ...state, iX: action.ixValue };
+      if(action.ixValue === '1')
+        return { ...state, iX: action.ixValue, weatherTerm: action.weatherTerm};
+      else
+        return { ...state, iX: action.ixValue, weatherTerm: ''};
     case 'SET_CLOUDHEIGHT':
       return { ...state, cloudHeight: action.cloudHeightValue };
     case 'SET_VISIBILITYRANGE':
@@ -32,6 +38,10 @@ const telegramReducer = (state, action) => {
       return { ...state, tendencyValue: action.tendencyValue };
     case 'SET_PRECIPITATION':
       return { ...state, precipitation: action.precipitation };
+    case 'SET_DURATIONPRECIPITATION':
+      return {...state, durationPrecipitation: action.durationPrecipitation};
+    case 'SET_WEATHERTERM':
+      return {...state, weatherTerm: action.weatherTerm};
     default:
       return state;
   }
@@ -39,8 +49,8 @@ const telegramReducer = (state, action) => {
 
 const Telegram = ({term, code, sensorData}) => {
   const headGroup = term % 2 === 0 ? 'ЩЭСМЮ' : 'ЩЭСИД';
-  const [iR, setIR] = useState({label: "Включена в раздел 1", value: '1'});
-  const [iX, setIX] = useState({label: "Включена", value: '1'});
+  const [iRO, setIRO] = useState({label: "Включена в раздел 1", value: '1'});
+  const [iXO, setIXO] = useState({label: "Включена", value: '1'});
   const [cloudHeight, setCloudHeight] = useState({label: "> 2500 или облаков нет", value: '9'});
   const [visibilityRange, setVisibilityRange] = useState({label: "1км.", value: "94"});
   const [nCloud, setNCloud] = useState({label: "0 (облаков нет)", value: "0"});
@@ -54,6 +64,8 @@ const Telegram = ({term, code, sensorData}) => {
   const [tendency, setTendency] = useState({label: "Без изменений 4", value: "4"});
   const [tendencyValue, setTendencyValue] = useState(('00'+Math.abs(+sensorData.prevPressure-sensorData.pressure)).slice(-3));
   const [precipitation, setPrecipitation] = useState('002');
+  const [durationPrecipitation, setDurationPrecipitation] = useState({label: '12', value: '2'});
+  const [weatherTermO, setWeatherTerm] = useState({label: "Изменение количества облаков в последний час неизвестно", value: "0"});
   const initTelegram = {
     headGroup: headGroup,
     code: code,
@@ -70,22 +82,27 @@ const Telegram = ({term, code, sensorData}) => {
     pressureSeaLevel: pressureSeaLevel,
     tendency: "4",
     tendencyValue: ('00'+Math.abs(+sensorData.prevPressure-sensorData.pressure)*10).slice(-3),
-    precipitation: '002'
+    precipitation: '002',
+    durationPrecipitation: '2',
+    weatherTerm: '00'
   }
   const [telegram, dispatch] = useReducer(telegramReducer,initTelegram);
   
   const handleIRSelected = (val) => {
-    setIR(val);
+    setIRO(val);
     dispatch({
       type: 'SET_IR',
-      irValue: val.value
+      irValue: val.value,
+      precipitation: precipitation,
+      durationPrecipitation: durationPrecipitation
     });
   }
   const handleIXSelected = (val) => {
-    setIX(val);
+    setIXO(val);
     dispatch({
       type: 'SET_IX',
-      ixValue: val.value
+      ixValue: val.value,
+      weatherTerm: ('0'+weatherTermO.value).slice(-2)
     });
   }
   const handleCloudHeightSelected = (val) =>{
@@ -189,21 +206,41 @@ const Telegram = ({term, code, sensorData}) => {
   }
   const handlePrecipitationChange = (e)=>{
     setPrecipitation(e.target.value);
-    // let p = ('00'+e.target.value).slice(-3);
     let p = +e.target.value<1.0 ? ''+(990+e.target.value*10) : ('00'+e.target.value).slice(-3);
     dispatch({
       type: 'SET_PRECIPITATION',
       precipitation: p
     });
   }
+  const handleDurationPrecipitationSelected = (val)=>{
+    setDurationPrecipitation(val);
+    dispatch({
+      type: 'SET_DURATIONPRECIPITATION',
+      durationPrecipitation: val.value
+    });
+  }
+  const handleWeatherTermSelected = (val)=>{
+    setWeatherTerm(val);
+    dispatch({
+      type: 'SET_WEATHERTERM',
+      weatherTerm: ('0'+val.value).slice(-2)
+    });
+  }
   const t = `${telegram.headGroup} ${telegram.code} \
     ${telegram.iR}${telegram.iX}${telegram.cloudHeight}${telegram.visibilityRange} \
     ${telegram.nCloud}${telegram.windDirection}${telegram.windSpeed} \
     1${telegram.temperature} 2${telegram.dewPoint} 3${telegram.pressure} 4${telegram.pressureSeaLevel} \
-    5${telegram.tendency}${telegram.tendencyValue} ${iR.value==='1'? '6': ''}${iR.value==='1'? telegram.precipitation : ''}`;
-  const group6 = iR.value === "1" ? 
-    <td><input type='number' value={precipitation} onChange={handlePrecipitationChange} min='0.0' max='989' step='0.1'/></td> : 
+    5${telegram.tendency}${telegram.tendencyValue}${iRO.value==='1'? ' 6': ' '}${telegram.precipitation}${telegram.durationPrecipitation}\
+    ${iXO.value==='1'? ' 7': ' '}${telegram.weatherTerm}`;
+  const group6 = iRO.value === "1" ? 
+    <tr><td><input type='number' value={precipitation} onChange={handlePrecipitationChange} min='0.0' max='989' step='0.1'/></td>    
+    <td><Select value={durationPrecipitation} onChange={handleDurationPrecipitationSelected} options={durationPrecipitationArray}/></td></tr> : 
     null;
+  const group7 = iXO.value === "1" ?
+    <tr>
+      <td><Select value={weatherTermO} onChange={handleWeatherTermSelected} options={weatherTermArray}/></td>
+      <td></td>
+    </tr> : null;
   return(
     <div className="container">
         <p>{t}</p>
@@ -216,8 +253,8 @@ const Telegram = ({term, code, sensorData}) => {
           </thead>
           <tbody>
             <tr>
-              <td><Select value={iR} onChange={handleIRSelected} options={iRArray}/></td>
-              <td><Select value={iX} onChange={handleIXSelected} options={iXArray}/></td>
+              <td><Select value={iRO} onChange={handleIRSelected} options={iRArray}/></td>
+              <td><Select value={iXO} onChange={handleIXSelected} options={iXArray}/></td>
               <td><Select value={cloudHeight} onChange={handleCloudHeightSelected} options={cloudHeightArray}/></td>
               <td><Select value={visibilityRange} onChange={handleVisibilityRangeSelected} options={visibilityRangeArray}/></td>
             </tr>
@@ -270,17 +307,26 @@ const Telegram = ({term, code, sensorData}) => {
             </tr>
           </tbody>
         </table>
-        <h4>Раздел 1, группы 6, 7 и 8</h4>
+        <h4>Группа 6</h4>
         <table className="table table-hover">
           <thead>
             <tr>
-              <th>Осадки</th>
+              <th>Осадки</th><th>Промежуток измерения осадков</th>
             </tr>
           </thead>
           <tbody>
+            {group6}
+          </tbody>
+        </table>
+        <h4>Группа 7</h4>
+        <table className="table table-hover">
+          <thead>
             <tr>
-              {group6}
+              <th>Погода в срок</th><th>Прошедшая погода</th>
             </tr>
+          </thead>
+          <tbody>
+            {group7}
           </tbody>
         </table>
     </div>
