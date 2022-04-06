@@ -182,6 +182,42 @@ const weatherPastArray = [
   {label: "Гроза с осадками или без них", value: "9"}
 ];
 
-
+const lowCloudArray=[
+  {label: 'Облака CL не видны', value: '/'},
+  {label: 'Облака CL отсутствуют', value: '0'},
+  {label: 'Разорвано-кучевые', value: '1'},
+  {label: 'Кучевые с покрывалом', value: '2'},
+  {label: 'Кучево-дождевые лысые', value: '3'},
+  {label: 'Слоисто-кучевые растекающиеся', value: '4'},
+  {label: 'Слоисто-кучевые', value: '5'},
+  {label: 'Слоистые', value: '6'},
+  {label: 'Слоистые разорванно-дождевые', value: '7'},
+  {label: 'Кучевые и слоисто-кучевые',  value: "8"}
+]
+const midlCloudArray=[
+  {label: 'Облака CM отсутствуют', value: '0'},
+  {label: 'Высокослоистые туманообразные', value: '1'},
+  {label: 'Cлоистодождевые', value: '2'},
+//   {label: 'Высококучевые, один слой', value: '3'},
+//   {label: 'Высококучевые неоднородные', value: '4'},
+//       when 3,5,6,7,8,9
+//         'Высококучевые'
+//   {label: 'Облака CM не видны', value: '/'},
+]
+const upperCloudArray=[
+  {label: 'Облака CH не видны', value: '/'},
+  {label: 'Облака CH отсутствуют', value: '0'},
+  {label: 'Перистые', value: '1'},
+  {label: 'Перистые', value: '2'},
+  {label: 'Перистые', value: '3'},
+  {label: 'Перистые', value: '4'},
+  {label: 'Перисто-слоистые', value: '5'},
+  {label: 'Перисто-слоистые', value: '6'},
+  {label: 'Перисто-слоистые', value: '7'},
+  {label: 'Перисто-слоистые', value: '8'},
+  {label: 'Перисто-кучевые', value: '9'}
+];
 export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, 
-  tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray};
+  tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray,
+  lowCloudArray, midlCloudArray, upperCloudArray
+};
