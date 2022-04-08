@@ -70,7 +70,8 @@ const telegramReducer = (state, action) => {
         return {...state, upperCloud: action.upperCloud};
       else
         return {...state, upperCloud: ''};
-    
+    case 'SET_TEMPERATUREMAXDAY':
+      return {...state, temperatureMaxDay: action.temperatureMaxDay}
     default:
       return state;
   }
@@ -100,6 +101,8 @@ const Telegram = ({term, code, sensorData}) => {
   const [lowCloudO, setLowCloud] = useState({label: 'Облака CL отсутствуют', value: '0'});
   const [midlCloudO, setMidlCloud] = useState({label: 'Облака CM отсутствуют', value: '0'});
   const [upperCloudO, setUpperCloud] = useState({label: 'Облака CH отсутствуют', value: '0'});
+  const [isGroup31, setIsGroup31] = useState(false)
+  const [temperatureMaxDay, setTemperatureMaxDay] = useState(sensorData.temperature);
   
   const initTelegram = {
     headGroup: headGroup,
@@ -124,7 +127,8 @@ const Telegram = ({term, code, sensorData}) => {
     totalCloud: '',
     lowCloud: '',
     midlCloud: '',
-    upperCloud: ''
+    upperCloud: '',
+    temperatureMaxDay: '' //(+temperatureMaxDay<0 ? '1': '0')+('0'+Math.abs(+temperatureMaxDay)*10).slice(-3)
   }
   const [telegram, dispatch] = useReducer(telegramReducer,initTelegram);
   
@@ -306,13 +310,34 @@ const Telegram = ({term, code, sensorData}) => {
       upperCloud: val.value
     });
   }
+  const handleIsGroup31Change = (e)=>{
+    setIsGroup31(e.target.checked);
+    let t = (+temperatureMaxDay<0 ? '1': '0')+('0'+Math.abs(+temperatureMaxDay)*10).slice(-3)
+    dispatch({
+      type: 'SET_TEMPERATUREMAXDAY',
+      temperatureMaxDay: e.target.checked ? t : ''
+    })
+    isSection3();
+  }
+  const handleTemperatureMaxDayChange = (e)=>{
+    setTemperatureMaxDay(e.target.value)
+    let t = (+e.target.value<0 ? '1': '0')+('0'+Math.abs(+e.target.value)*10).slice(-3)
+    dispatch({
+      type: 'SET_TEMPERATUREMAXDAY',
+      temperatureMaxDay: isGroup31 ? t : ''
+    })
+  }
+  const isSection3 = ()=>{
+    return isGroup31;
+  }
   const t = `${telegram.headGroup} ${telegram.code} \
     ${telegram.iR}${telegram.iX}${telegram.cloudHeight}${telegram.visibilityRange} \
     ${telegram.nCloud}${telegram.windDirection}${telegram.windSpeed} \
     1${telegram.temperature} 2${telegram.dewPoint} 3${telegram.pressure} 4${telegram.pressureSeaLevel} \
     5${telegram.tendency}${telegram.tendencyValue}${iRO.value==='1'? ' 6': ' '}${telegram.precipitation}${telegram.durationPrecipitation}\
     ${iXO.value==='1'? ' 7': ' '}${telegram.weatherTerm}${telegram.weatherPast}\
-    ${nCloudO.value>='1'&&nCloudO.value<='8'? ' 8': ' '}${telegram.totalCloud}${telegram.lowCloud}${telegram.midlCloud}${telegram.upperCloud}`;
+    ${nCloudO.value>='1'&&nCloudO.value<='8'? ' 8': ' '}${telegram.totalCloud}${telegram.lowCloud}${telegram.midlCloud}${telegram.upperCloud}\
+    ${isSection3()? ' 333':' '}${isGroup31? ' 1':' '}${telegram.temperatureMaxDay}`;
   const group6 = iRO.value === "1" ? 
     <tr><td><input type='number' value={precipitation} onChange={handlePrecipitationChange} min='0.0' max='989' step='0.1'/></td>    
     <td><Select value={durationPrecipitation} onChange={handleDurationPrecipitationSelected} options={durationPrecipitationArray}/></td></tr> : 
@@ -328,8 +353,12 @@ const Telegram = ({term, code, sensorData}) => {
       <td><Select value={lowCloudO} onChange={handleLowCloudSelected} options={lowCloudArray}/></td>
       <td><Select value={midlCloudO} onChange={handleMidlCloudSelected} options={midlCloudArray}/></td>
       <td><Select value={upperCloudO} onChange={handleUpperCloudSelected} options={upperCloudArray}/></td>
-    </tr> 
-  :null;
+    </tr> : null;
+  const group31 = isGroup31 ? 
+    <div>
+      <label htmlFor="tempMaxDay"><b>Максимальная температура воздуха за день</b></label>
+      <input type="number" id="tempMaxDay" value={temperatureMaxDay} onChange={handleTemperatureMaxDayChange} min='-40' max='50' step="0.1"/>
+    </div> : null
   return(
     <div className="container">
         <p>{t}</p>
@@ -429,6 +458,11 @@ const Telegram = ({term, code, sensorData}) => {
             {group8}
           </tbody>
         </table>
+        <h4>Раздел 3</h4>
+        <input type="checkbox" id="group31" checked={isGroup31} onChange={handleIsGroup31Change} />
+        <label htmlFor="group31"><b>Группа 1</b></label>
+        {group31}
+        
     </div>
   );
 }
