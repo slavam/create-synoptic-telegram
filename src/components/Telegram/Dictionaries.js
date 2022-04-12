@@ -217,7 +217,20 @@ const upperCloudArray=[
   {label: 'Перисто-слоистые', value: '8'},
   {label: 'Перисто-кучевые', value: '9'}
 ];
+const soilUnderSnowArray=[
+  {label: "Лед" , value: '0'},
+  {label: "Снег мокрый или слежавшийся 1-4 балла" , value: '1'},
+  {label: "Снег мокрый или слежавшийся 5-9 баллов" , value: '2'},
+  {label: "Снег мокрый или слежавшийся 10 баллов; равномерный слой" , value: '3'},
+  {label: "Снег мокрый или слежавшийся 10 баллов; неравномерный слой" , value: '4'},
+  {label: "Сухой рассыпчатый снег 1-4 балла" , value: '5'},
+  {label: "Сухой рассыпчатый снег 5-9 баллов" , value: '6'},
+  {label: "Сухой рассыпчатый снег 10 баллов; равномерный слой" , value: '7'},
+  {label: "Сухой рассыпчатый снег 10 баллов; неравномерный слой" , value: '8'},
+  {label: "Снег с сильными заметами и заносами",  value: '9'},
+  {label: "Нельзя определить",  value: '/'}
+]
 export {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, 
   tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray,
-  lowCloudArray, midlCloudArray, upperCloudArray
+  lowCloudArray, midlCloudArray, upperCloudArray, soilUnderSnowArray
 };

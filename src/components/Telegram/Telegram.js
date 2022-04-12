@@ -2,7 +2,7 @@ import React, { useState, useReducer } from 'react';
 import Select from 'react-select';
 import {cloudHeightArray, iRArray, iXArray, visibilityRangeArray, nCloudArray, 
   tendencyArray, durationPrecipitationArray, weatherTermArray, weatherPastArray,
-  lowCloudArray, midlCloudArray, upperCloudArray} from './Dictionaries';
+  lowCloudArray, midlCloudArray, upperCloudArray, soilUnderSnowArray} from './Dictionaries';
 
 const telegramReducer = (state, action) => {
   switch (action.type) {
@@ -71,7 +71,13 @@ const telegramReducer = (state, action) => {
       else
         return {...state, upperCloud: ''};
     case 'SET_TEMPERATUREMAXDAY':
-      return {...state, temperatureMaxDay: action.temperatureMaxDay}
+      return {...state, temperatureMaxDay: action.temperatureMaxDay};
+    case 'SET_TEMPERATUREMINNIGHT':
+      return {...state, temperatureMinNight: action.temperatureMinNight};
+    case 'SET_SOILUNDERSNOW':
+        return {...state, soilUnderSnow: action.soilUnderSnow};
+    case 'SET_SNOWDEPTH':
+        return {...state, snowDepth: action.snowDepth};
     default:
       return state;
   }
@@ -101,8 +107,13 @@ const Telegram = ({term, code, sensorData}) => {
   const [lowCloudO, setLowCloud] = useState({label: 'Облака CL отсутствуют', value: '0'});
   const [midlCloudO, setMidlCloud] = useState({label: 'Облака CM отсутствуют', value: '0'});
   const [upperCloudO, setUpperCloud] = useState({label: 'Облака CH отсутствуют', value: '0'});
-  const [isGroup31, setIsGroup31] = useState(false)
+  const [isGroup31, setIsGroup31] = useState(false);
   const [temperatureMaxDay, setTemperatureMaxDay] = useState(sensorData.temperature);
+  const [isGroup32, setIsGroup32] = useState(false);
+  const [temperatureMinNight, setTemperatureMinNight] = useState(sensorData.temperature);
+  const [isGroup34, setIsGroup34] = useState(false);
+  const [soilUnderSnowO, setSoilUnderSnow] = useState({label: "Снег мокрый или слежавшийся 1-4 балла", value: '1'});
+  const [snowDepth, setSnowDepth] = useState(1);
   
   const initTelegram = {
     headGroup: headGroup,
@@ -128,7 +139,10 @@ const Telegram = ({term, code, sensorData}) => {
     lowCloud: '',
     midlCloud: '',
     upperCloud: '',
-    temperatureMaxDay: '' //(+temperatureMaxDay<0 ? '1': '0')+('0'+Math.abs(+temperatureMaxDay)*10).slice(-3)
+    temperatureMaxDay: '',
+    temperatureMinNight: '',
+    soilUnderSnow: '',
+    snowDepth: ''
   }
   const [telegram, dispatch] = useReducer(telegramReducer,initTelegram);
   
@@ -328,7 +342,51 @@ const Telegram = ({term, code, sensorData}) => {
     })
   }
   const isSection3 = ()=>{
-    return isGroup31;
+    return isGroup31 || isGroup32 || isGroup34;
+  }
+  const handleTemperatureMinNightChange = (e)=>{
+    setTemperatureMinNight(e.target.value);
+    let t = (+e.target.value<0 ? '1': '0')+('0'+Math.abs(+e.target.value)*10).slice(-3)
+    dispatch({
+      type: 'SET_TEMPERATUREMINNIGHT',
+      temperatureMinNight: isGroup32 ? t : ''
+    })
+  }
+  const handleIsGroup32Change = (e)=>{
+    setIsGroup32(e.target.checked);
+    let t = (+temperatureMinNight<0 ? '1': '0')+('0'+Math.abs(+temperatureMinNight)*10).slice(-3)
+    dispatch({
+      type: 'SET_TEMPERATUREMINNIGHT',
+      temperatureMinNight: e.target.checked ? t : ''
+    })
+    isSection3();
+  }
+  const handleIsGroup34Change = (e)=>{
+    setIsGroup34(e.target.checked);
+    dispatch({
+      type: 'SET_SNOWDEPTH',
+      snowDepth: e.target.checked ? ('00'+snowDepth).slice(-3) : ''
+    });
+    dispatch({
+      type: 'SET_SOILUNDERSNOW',
+      soilUnderSnow: e.target.checked ? soilUnderSnowO.value : ''
+    });
+  }
+  const handleSoilUnderSnowSelected = (val)=>{
+    setSoilUnderSnow(val);
+    dispatch({
+      type: 'SET_SOILUNDERSNOW',
+      soilUnderSnow: isGroup34 ? val.value : ''
+    });
+    isSection3();
+  }
+  const handleSnowDepthChange = (e)=>{
+    setSnowDepth(e.target.value);
+    dispatch({
+      type: 'SET_SNOWDEPTH',
+      snowDepth: ('00'+e.target.value).slice(-3)
+    });
+    isSection3();
   }
   const t = `${telegram.headGroup} ${telegram.code} \
     ${telegram.iR}${telegram.iX}${telegram.cloudHeight}${telegram.visibilityRange} \
@@ -337,7 +395,8 @@ const Telegram = ({term, code, sensorData}) => {
     5${telegram.tendency}${telegram.tendencyValue}${iRO.value==='1'? ' 6': ' '}${telegram.precipitation}${telegram.durationPrecipitation}\
     ${iXO.value==='1'? ' 7': ' '}${telegram.weatherTerm}${telegram.weatherPast}\
     ${nCloudO.value>='1'&&nCloudO.value<='8'? ' 8': ' '}${telegram.totalCloud}${telegram.lowCloud}${telegram.midlCloud}${telegram.upperCloud}\
-    ${isSection3()? ' 333':' '}${isGroup31? ' 1':' '}${telegram.temperatureMaxDay}`;
+    ${isSection3()? ' 333':' '}${isGroup31? ' 1':' '}${telegram.temperatureMaxDay}${isGroup32? ' 2':' '}${telegram.temperatureMinNight}\
+    ${isGroup34? ' 4':' '}${telegram.soilUnderSnow}${telegram.snowDepth}`;
   const group6 = iRO.value === "1" ? 
     <tr><td><input type='number' value={precipitation} onChange={handlePrecipitationChange} min='0.0' max='989' step='0.1'/></td>    
     <td><Select value={durationPrecipitation} onChange={handleDurationPrecipitationSelected} options={durationPrecipitationArray}/></td></tr> : 
@@ -359,6 +418,25 @@ const Telegram = ({term, code, sensorData}) => {
       <label htmlFor="tempMaxDay"><b>Максимальная температура воздуха за день</b></label>
       <input type="number" id="tempMaxDay" value={temperatureMaxDay} onChange={handleTemperatureMaxDayChange} min='-40' max='50' step="0.1"/>
     </div> : null
+  const group32 = isGroup32 ?
+    <div>
+      <label htmlFor="tempMinNight"><b>Минимальная температура воздуха за ночь</b></label>
+      <input type="number" id="tempMinNight" value={temperatureMinNight} onChange={handleTemperatureMinNightChange} min='-40' max='50' step="0.1"/>
+    </div> : null
+  const group34 = isGroup34 ?
+    <table className="table table-hover">
+    <thead>
+      <tr>
+        <th>Состояние поверхности под снегом</th><th>Высота снежного покрова</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><Select value={soilUnderSnowO} onChange={handleSoilUnderSnowSelected} options={soilUnderSnowArray}/></td>
+        <td><input type="number" id="snowDepth" value={snowDepth} onChange={handleSnowDepthChange} min='0' max='999' /></td>
+      </tr>
+    </tbody>
+  </table> : null
   return(
     <div className="container">
         <p>{t}</p>
@@ -462,7 +540,14 @@ const Telegram = ({term, code, sensorData}) => {
         <input type="checkbox" id="group31" checked={isGroup31} onChange={handleIsGroup31Change} />
         <label htmlFor="group31"><b>Группа 1</b></label>
         {group31}
-        
+        <br/>
+        <input type="checkbox" id="group32" checked={isGroup32} onChange={handleIsGroup32Change} />
+        <label htmlFor="group32"><b>Группа 2</b></label>
+        {group32}
+        <br/>
+        <input type="checkbox" id="group34" checked={isGroup34} onChange={handleIsGroup34Change} />
+        <label htmlFor="group34"><b>Группа 4</b></label>
+        {group34}
     </div>
   );
 }
